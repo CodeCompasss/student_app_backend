@@ -1,18 +1,29 @@
-// src/lib/firestore.ts
-import { initializeApp, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-import * as path from 'path';
+// src/lib/firebase-admin.ts
+import { initializeApp, cert, getApps } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 
-// Ensure FIREBASE_SERVICE_ACCOUNT_PATH is set in your .env.local
-const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
+const serviceAccountJson = process.env.FIREBASE_ADMIN_SDK_KEY;
 
-if (!serviceAccountPath) {
-  throw new Error('FIREBASE_SERVICE_ACCOUNT_PATH environment variable is not defined.');
+if (!serviceAccountJson) {
+  throw new Error("FIREBASE_ADMIN_SDK_KEY env var not set.");
 }
 
-initializeApp({
-  credential: cert(path.resolve(serviceAccountPath)),
-});
+const serviceAccount = JSON.parse(serviceAccountJson);
+
+// Avoid reinitializing
+if (!getApps().length) {
+  initializeApp({
+    credential: cert({
+      projectId: serviceAccount.project_id,
+      clientEmail: serviceAccount.client_email,
+      privateKey: serviceAccount.private_key.replace(/\\n/g, "\n"),
+    }),
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  });
+}
 
 const db = getFirestore();
-export { db };
+const bucket = getStorage().bucket();
+
+export { db, bucket };

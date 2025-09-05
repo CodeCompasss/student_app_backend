@@ -15,15 +15,31 @@ export default function NewEventPage() {
     title: "",
     description: "",
     venue: "",
-    date: new Date(), // only date
-    time: "", // only time (string HH:mm)
-    image: "",
+    date: new Date(),
+    time: "",
+    image: "", // will store uploaded image URL
   });
+  const [uploading, setUploading] = useState(false);
+
+  async function handleImageUpload(file: File) {
+    const data = new FormData();
+    data.append("file", file);
+
+    setUploading(true);
+    const res = await fetch("/api/events/upload", {
+      method: "POST",
+      body: data,
+    });
+    setUploading(false);
+
+    if (!res.ok) throw new Error("Upload failed");
+    const { url } = await res.json();
+    setForm((prev) => ({ ...prev, image: url }));
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
-    const formattedDate = form.date.toISOString().split("T")[0]; // YYYY-MM-DD
+    const formattedDate = form.date.toISOString().split("T")[0];
 
     await fetch("/api/events", {
       method: "POST",
@@ -32,8 +48,8 @@ export default function NewEventPage() {
         title: form.title,
         description: form.description,
         venue: form.venue,
-        date: formattedDate, // goes to timestamp("date")
-        time: form.time, // goes to varchar("time")
+        date: formattedDate,
+        time: form.time,
         image: form.image,
       }),
     });
@@ -92,13 +108,19 @@ export default function NewEventPage() {
         />
       </div>
 
-      <input
-        className="w-full border p-2 rounded"
-        placeholder="Image URL"
-        value={form.image}
-        onChange={(e) => setForm({ ...form, image: e.target.value })}
-        required
-      />
+      {/* Image Upload */}
+      <div>
+        <label className="block mb-1 font-medium">Image</label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
+        />
+        {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
+        {form.image && (
+          <img src={form.image} alt="Uploaded" className="mt-2 w-32 h-32 object-cover rounded" />
+        )}
+      </div>
 
       <button
         type="submit"
