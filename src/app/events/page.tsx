@@ -1,3 +1,4 @@
+// Admin Events Page - src/app/events/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -46,28 +47,33 @@ export default function AdminEventsPage() {
           </tr>
         </thead>
         <tbody>
-          {events.map((e: Event) => (
-            <tr key={e.id} className="border-t">
-              <td className="p-2">{e.title}</td>
-              <td className="p-2">{e.venue}</td>
-              <td className="p-2">{new Date(e.date).toLocaleDateString()}</td>
-              <td className="p-2 flex gap-2">
-                <button
-                  onClick={() => router.push(`/events/${e.id}/edit`)}
-                  className="p-1 bg-yellow-300 rounded"
-                >
-                  <Pencil className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => deleteEvent(e.id)}
-                  className="p-1 bg-red-500 text-white rounded"
-                >
-                  <Trash className="w-4 h-4" />
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
+  {events.map((e: Event) => (
+    <tr
+      key={e.id}
+      className="border-t cursor-pointer hover:bg-gray-50"
+      onClick={() => router.push(`/events/${e.id}`)}
+    >
+      <td className="p-2">{e.title}</td>
+      <td className="p-2">{e.venue}</td>
+      <td className="p-2">{new Date(e.date).toLocaleDateString()}</td>
+      <td className="p-2 flex gap-2" onClick={(ev) => ev.stopPropagation()}>
+        <button
+          onClick={() => router.push(`/events/${e.id}/edit`)}
+          className="p-1 bg-yellow-300 rounded"
+        >
+          <Pencil className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => deleteEvent(e.id)}
+          className="p-1 bg-red-500 text-white rounded"
+        >
+          <Trash className="w-4 h-4" />
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
       </table>
     </div>
   );

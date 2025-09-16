@@ -3,6 +3,16 @@ import { db } from "@/lib/db";
 import { events } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
+
+// GET one event
+export async function GET(_: Request, { params }: { params: { id: string } }) {
+  const result = await db.select().from(events).where(eq(events.id, params.id));
+  if (!result[0]) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  return NextResponse.json(result[0]);
+}
+
 // Update event
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   const data = await req.json();
