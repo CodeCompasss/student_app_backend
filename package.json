@@ -23,6 +23,7 @@
     "Docker-run": "docker run -p 3000:3000 nextjs_tempalate"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.1",
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.2",
     "drizzle-kit": "^0.31.4",

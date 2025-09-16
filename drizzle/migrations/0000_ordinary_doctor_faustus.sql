@@ -6,7 +6,7 @@ CREATE TABLE "events" (
 	"venue" varchar(255) NOT NULL,
 	"date" timestamp NOT NULL,
 	"time" varchar(50),
-	"image" varchar(500) NOT NULL,
+	"image" "bytea",
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "events_slug_unique" UNIQUE("slug")
