@@ -69,5 +69,5 @@
     ".storybook/*.ts",
     ".next/types/**/*.ts",
     "**/*.mts"
-, "src/middleware.ts"  ]
+, "src/middleware.ts", "src/app/api/events/upload/route.disabled.ts"  ]
 }

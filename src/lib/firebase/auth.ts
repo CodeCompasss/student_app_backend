@@ -1,11 +1,16 @@
 // Import User and other necessary types/functions from Firebase Auth
-import { signInWithPopup, GoogleAuthProvider, User, UserCredential , getAuth } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider, User as FirebaseUser, UserCredential, getAuth, signOut as firebaseSignOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, firestore } from './config'; // Ensure you are correctly importing from your Firebase config
 
+// Re-export the User type
+export type User = FirebaseUser;
+
 // Function to track authentication state changes
 export function onAuthStateChanged(callback: (authUser: User | null) => void) {
-  return auth.onAuthStateChanged(callback);
+  return auth.onAuthStateChanged((user) => {
+    callback(user as User | null);
+  });
 }
 
 // Function for Google sign-in and role check
@@ -25,7 +30,7 @@ export async function signInWithGoogle(): Promise<{ user:User; isAdmin: boolean 
     // Restrict login to only emails from "gecskp.ac.in"
     // Restrict login to only emails from "gecskp.ac.in", except for a specific admin email
 const allowedEmailPattern = /^[a-zA-Z0-9]+@gecskp\.ac\.in$/;
-const adminOverrideEmail = "codecompass2024@gmail.com";
+const adminOverrideEmail = "shadilrayyan2@gmail.com";
 
 if (user.email !== adminOverrideEmail && !allowedEmailPattern.test(user.email)) {
   throw new Error('Only GEC SKP emails are allowed');
@@ -49,7 +54,7 @@ if (user.email !== adminOverrideEmail && !allowedEmailPattern.test(user.email)) 
 
 export async function signOutWithGoogle(): Promise<void> {
   try {
-    await auth.signOut();
+    await firebaseSignOut(auth);
   } catch (error) {
     console.error('Error signing out with Google:', error);
     throw error;
