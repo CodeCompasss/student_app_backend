@@ -1,3 +1,4 @@
+// New Event Page - src/app/events/[id]/edit/page.tsx
 "use client";
 
 import { useState } from "react";
