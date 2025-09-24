@@ -1,108 +1,132 @@
-// New Event Page - src/app/events/[id]/edit/page.tsx
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import EventForm from '@/components/EventForm';
 
-export default function NewEventPage() {
+interface EventData {
+  id: string;
+  title: string;
+  description: string;
+  venue: string;
+  date: string;
+  time: string;
+  imageData?: string | null;
+  imageMimeType?: string | null;
+}
+
+export default function EditEventPage() {
   const router = useRouter();
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    venue: "",
-    date: new Date(), // only date
-    time: "",         // only time (string HH:mm)
-    image: "",
-  });
+  const params = useParams();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [eventData, setEventData] = useState<EventData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  useEffect(() => {
+    const fetchEvent = async () => {
+      try {
+        const response = await fetch(`/api/events/${params.id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch event');
+        }
+        const data = await response.json();
+        setEventData(data);
+      } catch (err) {
+        console.error('Error fetching event:', err);
+        setError('Failed to load event');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    const formattedDate = form.date.toISOString().split("T")[0]; // YYYY-MM-DD
+    if (params.id) {
+      fetchEvent();
+    }
+  }, [params.id]);
 
-    await fetch("/api/events", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: form.title,
-        description: form.description,
-        venue: form.venue,
-        date: formattedDate, // goes to timestamp("date")
-        time: form.time,     // goes to varchar("time")
-        image: form.image,
-      }),
-    });
+  const handleSubmit = async (formData: FormData) => {
+    try {
+      setIsSubmitting(true);
+      
+      const response = await fetch(`/api/events/${params.id}`, {
+        method: 'PUT',
+        body: formData,
+      });
 
-    router.push("/events");
+      if (!response.ok) {
+        throw new Error('Failed to update event');
+      }
+
+      router.push(`/events/${params.id}`);
+      router.refresh();
+    } catch (error) {
+      console.error('Error updating event:', error);
+      alert('Failed to update event. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
   }
 
+  if (error) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <div className="bg-red-50 border-l-4 border-red-400 p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!eventData) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <p>Event not found</p>
+      </div>
+    );
+  }
+
+  // Convert the event data to include image as a data URL if it exists
+  const initialData = {
+    ...eventData,
+    imageUrl: eventData.imageData && eventData.imageMimeType
+      ? `data:${eventData.imageMimeType};base64,${eventData.imageData}`
+      : null
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="max-w-lg mx-auto p-6 space-y-4">
-      <h1 className="text-2xl font-bold">Add New Event</h1>
-
-      <input
-        className="w-full border p-2 rounded"
-        placeholder="Title"
-        value={form.title}
-        onChange={(e) => setForm({ ...form, title: e.target.value })}
-        required
-      />
-
-      <textarea
-        className="w-full border p-2 rounded"
-        placeholder="Description"
-        value={form.description}
-        onChange={(e) => setForm({ ...form, description: e.target.value })}
-        required
-      />
-
-      <input
-        className="w-full border p-2 rounded"
-        placeholder="Venue"
-        value={form.venue}
-        onChange={(e) => setForm({ ...form, venue: e.target.value })}
-        required
-      />
-
-      {/* Date Picker */}
-      <div>
-        <label className="block mb-1 font-medium">Date</label>
-        <DatePicker
-          selected={form.date}
-          onChange={(date) => date && setForm({ ...form, date })}
-          dateFormat="yyyy-MM-dd"
-          className="w-full border p-2 rounded"
+    <div className="max-w-2xl mx-auto p-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Edit Event</h1>
+        <p className="mt-2 text-sm text-gray-600">
+          Update the event details below.
+        </p>
+      </div>
+      
+      <div className="bg-white shadow rounded-lg p-6">
+        <EventForm 
+          onSubmit={handleSubmit} 
+          initialData={initialData}
+          isSubmitting={isSubmitting} 
         />
       </div>
-
-      {/* Time Picker */}
-      <div>
-        <label className="block mb-1 font-medium">Time</label>
-        <input
-          type="time"
-          className="w-full border p-2 rounded"
-          value={form.time}
-          onChange={(e) => setForm({ ...form, time: e.target.value })}
-          required
-        />
-      </div>
-
-      <input
-        className="w-full border p-2 rounded"
-        placeholder="Image URL"
-        value={form.image}
-        onChange={(e) => setForm({ ...form, image: e.target.value })}
-        required
-      />
-
-      <button
-        type="submit"
-        className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
-      >
-        Save
-      </button>
-    </form>
+    </div>
   );
 }

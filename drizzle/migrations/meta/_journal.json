@@ -8,6 +8,20 @@
       "when": 1758033961329,
       "tag": "0000_ordinary_doctor_faustus",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1758693572190,
+      "tag": "0001_small_thunderbolt",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1758694663525,
+      "tag": "0002_wakeful_jasper_sitwell",
+      "breakpoints": true
     }
   ]
 }
