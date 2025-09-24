@@ -70,7 +70,25 @@ export async function POST(req: Request) {
       }
     }
 
-    const slug = title.toLowerCase().replace(/\s+/g, "-");
+    let slug = title.toLowerCase().replace(/\s+/g, "-");
+    let slugExists = true;
+    let attempt = 1;
+    let newSlug = slug;
+    
+    // Check if slug exists and append number if it does
+    while (slugExists && attempt < 10) {
+      const existingEvent = await db.query.events.findFirst({
+        where: (events, { eq }) => eq(events.slug, newSlug),
+      });
+      
+      if (!existingEvent) {
+        slugExists = false;
+        slug = newSlug;
+      } else {
+        newSlug = `${slug}-${attempt}`;
+        attempt++;
+      }
+    }
 
     const result = await db
       .insert(events)
