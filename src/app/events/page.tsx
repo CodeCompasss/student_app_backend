@@ -2,79 +2,161 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash } from "lucide-react";
+import { Plus, Pencil, Trash, Calendar, MapPin, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  venue: string;
+  date: string;
+  time: string;
+  imageData?: string | null;
+  imageMimeType?: string | null;
+}
 
 export default function AdminEventsPage() {
-  interface Event {
-    id: string;
-    title: string;
-    venue: string;
-    date: string;
-  }
-
   const [events, setEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    fetch("/api/events").then(res => res.json()).then(setEvents);
+    const fetchEvents = async () => {
+      try {
+        const res = await fetch("/api/events");
+        const data = await res.json();
+        setEvents(data);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEvents();
   }, []);
 
   async function deleteEvent(id: string) {
-    await fetch(`/api/events/${id}`, { method: "DELETE" });
-    setEvents(events.filter(e => e.id !== id));
+    if (!confirm("Are you sure you want to delete this event?")) return;
+    
+    try {
+      await fetch(`/api/events/${id}`, { method: "DELETE" });
+      setEvents(events.filter(e => e.id !== id));
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      alert("Failed to delete event. Please try again.");
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Manage Events</h1>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Events</h1>
+          <p className="text-gray-600 mt-1">Manage your upcoming events</p>
+        </div>
         <button
           onClick={() => router.push("/events/new")}
-          className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg"
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
         >
-          <Plus className="w-4 h-4" /> Add Event
+          <Plus className="w-5 h-5" />
+          <span>Add New Event</span>
         </button>
       </div>
-        
-      <table className="w-full border text-left">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="p-2">Title</th>
-            <th className="p-2">Venue</th>
-            <th className="p-2">Date</th>
-            <th className="p-2 w-32">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-  {events.map((e: Event) => (
-    <tr
-      key={e.id}
-      className="border-t cursor-pointer hover:bg-gray-50"
-      onClick={() => router.push(`/events/${e.id}`)}
-    >
-      <td className="p-2">{e.title}</td>
-      <td className="p-2">{e.venue}</td>
-      <td className="p-2">{new Date(e.date).toLocaleDateString()}</td>
-      <td className="p-2 flex gap-2" onClick={(ev) => ev.stopPropagation()}>
-        <button
-          onClick={() => router.push(`/events/${e.id}/edit`)}
-          className="p-1 bg-yellow-300 rounded"
-        >
-          <Pencil className="w-4 h-4" />
-        </button>
-        <button
-          onClick={() => deleteEvent(e.id)}
-          className="p-1 bg-red-500 text-white rounded"
-        >
-          <Trash className="w-4 h-4" />
-        </button>
-      </td>
-    </tr>
-  ))}
-</tbody>
 
-      </table>
+      {events.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <Calendar className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900">No events yet</h3>
+          <p className="mt-1 text-gray-500">Get started by creating a new event.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {events.map((event) => (
+            <div key={event.id} className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow">
+              {event.imageData && (
+                <div className="relative h-48 w-full">
+                  <Image
+                    src={event.imageData}
+                    alt={event.title}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              )}
+              <div className="p-5">
+                <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1">{event.title}</h3>
+                
+                <div className="flex items-center text-gray-600 text-sm mb-3">
+                  <MapPin className="w-4 h-4 mr-1.5 flex-shrink-0" />
+                  <span className="truncate">{event.venue}</span>
+                </div>
+                
+                <div className="flex items-center text-gray-600 text-sm mb-4">
+                  <Calendar className="w-4 h-4 mr-1.5 flex-shrink-0" />
+                  <span>
+                    {new Date(event.date).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                    {event.time && (
+                      <>
+                        <span className="mx-1">•</span>
+                        <Clock className="w-4 h-4 inline-block mr-1" />
+                        {event.time}
+                      </>
+                    )}
+                  </span>
+                </div>
+
+                {event.description && (
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                    {event.description}
+                  </p>
+                )}
+
+                <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+                  <button
+                    onClick={() => router.push(`/events/${event.id}`)}
+                    className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    View Details
+                  </button>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => router.push(`/events/${event.id}/edit`)}
+                      className="p-1.5 text-gray-500 hover:text-blue-600 rounded-full hover:bg-blue-50"
+                      title="Edit"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => deleteEvent(event.id)}
+                      className="p-1.5 text-gray-500 hover:text-red-600 rounded-full hover:bg-red-50"
+                      title="Delete"
+                    >
+                      <Trash className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

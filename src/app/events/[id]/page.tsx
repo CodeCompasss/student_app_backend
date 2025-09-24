@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 
 export default async function EventDetailPage({
   params,
@@ -7,8 +8,7 @@ export default async function EventDetailPage({
 }) {
   const { id } = params;
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
   const res = await fetch(`${baseUrl}/api/events/${id}`, {
     cache: "no-store",
@@ -19,20 +19,41 @@ export default async function EventDetailPage({
   const event = await res.json();
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-4">
-      <h1 className="text-3xl font-bold">{event.title}</h1>
-      <p className="text-gray-600">{event.venue}</p>
-      <p className="text-gray-500">
-        {new Date(event.date).toLocaleDateString()} at {event.time}
-      </p>
-      {event.image && (
-        <img
-          src={event.image}
-          alt={event.title}
-          className="w-full rounded-lg shadow"
-        />
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <div className="space-y-2">
+        <h1 className="text-4xl font-bold text-gray-900">{event.title}</h1>
+        <div className="flex items-center text-gray-600 space-x-4">
+          <span>{event.venue}</span>
+          <span>•</span>
+          <span>
+            {new Date(event.date).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </span>
+          <span>•</span>
+          <span>{event.time}</span>
+        </div>
+      </div>
+
+      {event.imageData && (
+        <div className="relative w-full h-96 rounded-lg overflow-hidden shadow-lg">
+          <Image
+            src={event.imageData}
+            alt={event.title}
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
       )}
-      <p className="mt-4 whitespace-pre-line">{event.description}</p>
+
+      {event.description && (
+        <div className="prose max-w-none mt-8">
+          <p className="whitespace-pre-line text-gray-700">{event.description}</p>
+        </div>
+      )}
     </div>
   );
 }

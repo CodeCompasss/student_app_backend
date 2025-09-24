@@ -3,19 +3,27 @@ import { events, type Event } from "@/lib/db/schema";
 import { NextResponse } from "next/server";
 import { processFileForStorage } from "@/lib/storage";
 
-// Helper function to convert binary image to base64
+// Helper function to convert binary image to base64 data URL
 function processEventImage(event: Event) {
   if (!event.imageData) return { ...event, imageData: null };
   
-  const buffer = Buffer.isBuffer(event.imageData) 
-    ? event.imageData 
-    : Buffer.from(event.imageData as unknown as ArrayBuffer);
-  
-  const base64Image = buffer.toString('base64');
-  return {
-    ...event,
-    imageData: `data:${event.imageMimeType};base64,${base64Image}`
-  };
+  try {
+    const buffer = Buffer.isBuffer(event.imageData) 
+      ? event.imageData 
+      : Buffer.from(event.imageData as unknown as ArrayBuffer);
+    
+    const base64Image = buffer.toString('base64');
+    const mimeType = event.imageMimeType || 'image/jpeg';
+    
+    return {
+      ...event,
+      imageData: `data:${mimeType};base64,${base64Image}`,
+      imageMimeType: mimeType // Ensure mimeType is included in the response
+    };
+  } catch (error) {
+    console.error('Error processing image:', error);
+    return { ...event, imageData: null, imageMimeType: null };
+  }
 }
 
 export async function GET() {
