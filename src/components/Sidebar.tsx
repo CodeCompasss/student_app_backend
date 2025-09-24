@@ -35,12 +35,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, userRole }) => {
         pathname === '/admin/ListAdmin' ||
         pathname === '/admin/RemoveAdmin';
 
-    const baseStyle = "flex items-center w-full p-3 transition rounded-xl border-2 duration-300";
-    const activeStyle = "bg-purple-100 text-purple-600 font-semibold";
-    const inactiveStyle = "text-gray-700 hover:bg-gray-100 hover:text-gray-900";
-    const subLinkBase = "block p-2 rounded transition duration-200";
-    const subLinkActive = "bg-purple-100 text-purple-600 font-semibold";
-    const subLinkInactive = "text-gray-600 hover:bg-gray-100";
+    const baseStyle = "flex items-center w-full p-1.5 text-xs transition rounded-md duration-200 hover:bg-gray-100";
+    const activeStyle = "bg-purple-50 text-purple-600 font-medium";
+    const inactiveStyle = "text-gray-600 hover:bg-gray-50";
+    const subLinkBase = "block px-3 py-1 text-xs rounded transition duration-200";
+    const subLinkActive = "bg-purple-50 text-purple-600 font-medium";
+    const subLinkInactive = "text-gray-500 hover:bg-gray-50";
 
     return (
         <>
@@ -50,25 +50,22 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, userRole }) => {
             ></div>
 
             <div 
-                className={`fixed inset-y-0 left-0 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-30 
+                className={`fixed inset-y-0 left-0 w-48 bg-white shadow-lg transform transition-all duration-300 ease-in-out z-30 
                 ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
                 lg:translate-x-0 lg:static`}
             >
                 <div className="flex flex-col h-full">
                     {/* Top Section */}
-                    <div className="p-6 pt-3 pb-3">
-                        <div className="flex items-center justify-center h-20 overflow-hidden mb-2">
-                            <div className="relative w-full h-full">
-                                <Image src={logo} alt="Admin Dashboard" layout="fill" objectFit="contain" />
+                    <div className="p-3 pt-3 pb-2">
+                        <div className="flex items-center justify-center h-12 overflow-hidden">
+                            <div className="relative w-5/6 h-full">
+                                <Image src={logo} alt="Admin Dashboard" layout="fill" objectFit="contain" priority />
                             </div>
-                        </div>
-                        <div className='text-center text-black font-semibold'>
-                            Admin Dashboard
                         </div>
                     </div>
 
                     {/* Middle Section */}
-                    <div className="flex-grow p-6 overflow-y-auto">
+                    <div className="flex-grow p-3 overflow-y-auto">
                         <div className="space-y-3">
                             <Link href="/" passHref>
                                 <button className={`${baseStyle} ${pathname === '/' ? activeStyle : inactiveStyle}`}>

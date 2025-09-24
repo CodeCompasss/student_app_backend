@@ -56,12 +56,16 @@ export default function AuthWrapper({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-50">
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} userRole={userRole} />
       
-      <div className=""> {/* reserve space for sidebar width */}
-        <Navbar />
-        <main>{children}</main>
+      <div className="flex-1 flex flex-col lg:ml-48 transition-all duration-300 min-w-0">
+        <Navbar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
+        <main className="flex-1 p-4 sm:p-6 overflow-auto">
+          <div className="w-full">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );

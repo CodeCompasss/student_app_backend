@@ -21,7 +21,7 @@ export default function AuthPage() {
         console.log("User logged in:", user);
         console.log("token stored in cookie:", idToken);
       }
-      if (result?.isAdmin) {
+      if (result?.isAdmin ) {
         router.push("/");
       }
     } catch (err) {
